@@ -1,0 +1,85 @@
+
+const fs = require('fs');
+
+const qrcode = require('qrcode-terminal');
+
+const { Client, LegacySessionAuth,LocalAuth } = require('whatsapp-web.js');
+
+const SESSION_FILE_PATH = "./session.js";
+
+const country_code = '521';
+const number = "5218110208406";
+const msg = "Hola esto es una prueba desde api web";
+
+const C_US_PLACEHOLDER = '@c.us';
+
+let sessionData;
+
+if(fs.existsSync(SESSION_FILE_PATH)){
+    sessionData = require(SESSION_FILE_PATH);
+}
+
+const cliente = new Client({    
+    authStrategy: new LocalAuth({
+        session:sessionData
+    })    
+});
+
+
+//init 
+cliente.initialize();
+
+cliente.on('qr', qr =>{
+    console.log("on qr..");
+    qrcode.generate(qr,{small:true});    
+});
+
+cliente.on('ready',()=>{
+    console.log("El cliente esta listo..");
+
+    let charId = country_code + number + '@c.us';
+
+    cliente.sendMessage(charId,msg)    
+    .then(response=>{
+            if(response.id.fromMe){
+                console.log("Mensaje enviado...");
+            }
+    });
+});
+
+cliente.on('authenticated',session=>{
+    console.log("on authenticated");
+
+    sessionData = session;
+
+    /*fs.writeFile(SESSION_FILE_PATH,JSON.stringify(session),err=>{ 
+        if(err){
+            console.log("Error "+err);
+        }
+     });*/
+});
+
+cliente.on('auth_failure',msg=>{
+    console.err("Hubo un fallo en en la auth"+msg);
+})
+
+cliente.on('message', msg=>{
+    console.log("from :"+msg.from + ':' + msg.body);
+    if(msg.body=='hola'){
+        cliente.sendMessage(msg.from,"Hola que tal");
+    }
+});
+
+const sendMessage = ({number}) =>{
+    
+    if(!number) throw new Error("El numero es requerido");
+
+    let charId = `${country_code}${number}${C_US_PLACEHOLDER}`;
+
+    cliente.sendMessage(charId,msg)    
+    .then(response=>{
+            console.log("Mensaje enviado..");
+    });
+}
+
+export default {sendMessage};
