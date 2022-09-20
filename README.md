@@ -6,7 +6,8 @@ https://wwebjs.dev/
 
 **Versiones**
 Node > 12, express, qrcode-terminal
-probado en la version v14.x
+
+probado en la version node v14.x
 
 **Iniciar prueba**
 
