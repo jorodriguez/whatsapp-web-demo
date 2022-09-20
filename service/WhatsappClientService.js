@@ -1,7 +1,7 @@
 
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
-const  qr = require('qr-image');
+const qrCode = require('qr-image');
 
 const { Client, LegacySessionAuth,LocalAuth } = require('whatsapp-web.js');
 
@@ -115,6 +115,9 @@ class WhatsappClient extends Client {
     getQrCode =() =>{
         
         if(this.clienteOk){
+            
+            generateImage(this.qrCode);
+
             return this.qrCode;
         }else{ return "Cliente No activo"; }        
     }   
@@ -139,5 +142,15 @@ const getSesionData = ()=>{
 
     return sesionData;        
 } 
+
+const generateImage = async (base64) => {
+    const path = `${process.cwd()}/external_resource`;
+    
+    let qr_svg =  await qrCode.imageSync(base64, { type: "svg", margin: 4 });
+
+    qr_svg.pipe(require("fs").createWriteStream(`${path}/qr.svg`));
+    console.log(`⚡ Recuerda que el QR se actualiza cada minuto ⚡'`);
+    console.log(`⚡ Actualiza F5 el navegador para mantener el mejor QR⚡`);
+  };
 
 module.exports = WhatsappClient;
