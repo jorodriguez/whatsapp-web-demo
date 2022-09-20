@@ -1,12 +1,13 @@
 
 const fs = require('fs');
 const qrcode = require('qrcode-terminal');
+const  qr = require('qr-image');
 
 const { Client, LegacySessionAuth,LocalAuth } = require('whatsapp-web.js');
 
 const SESSION_FILE_PATH = "./session.js";
-const country_code = '521';
-const myNumber = "8110208406";
+const country_code = '521'; //codigo para mexico
+const myNumber = "811XXXX";
 const msgInit = "Hola esto es una prueba desde api client web";
 
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
@@ -89,6 +90,11 @@ class WhatsappClient extends Client {
     sendMessagePhonePromise = ({phoneNumber,message})=>{
 
         console.log(`try to send ${phoneNumber} : ${message}`);
+        
+        if(!this.clienteOk){
+            console.log("El cliente no esta listo, debe escanear el codigo QR");
+            return;
+        }    
 
         validarRequerido(message);
         
@@ -104,6 +110,7 @@ class WhatsappClient extends Client {
         }).catch(err => console.log("ERROR AL ENVIAR MSG "+err));
     }
 
+    
 
     getQrCode =() =>{
         
