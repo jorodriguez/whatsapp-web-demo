@@ -17,21 +17,23 @@ class WhatsappClient extends Client {
     constructor(){
         super({
             authStrategy: new LocalAuth({ session:getSesionData() } ),
-            puppeteer: { headless: true },
-            args: ['--no-sandbox'],
+            puppeteer: { headless: true },            
         });
         this.sessionData;
         this.clienteOk = false;
         this.qrCode;
+        
         this.init();
     }
 
     
-    init = () =>{
+     init = async () =>{
 
         console.log("Iniciando....");
 
-        this.initialize();
+         await this.initialize();
+         
+         console.log("INICIADO....");
 
         this.on('authenticated',session=>{
             console.log("on authenticated");
@@ -54,7 +56,7 @@ class WhatsappClient extends Client {
         this.on('qr', qr =>{
             console.log("QR ..");//TODO: enviar qr por websocket
             this.qrCode = qr;            
-            //qrcode.generate(qr,{small:true});  
+            qrcode.generate(qr,{small:true});  
             
             generateImage(qr);
         });
