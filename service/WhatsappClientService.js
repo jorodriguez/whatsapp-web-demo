@@ -17,7 +17,8 @@ class WhatsappClient extends Client {
     constructor(){
         super({
             authStrategy: new LocalAuth({ session:getSesionData() } ),
-            puppeteer: { headless: true }
+            puppeteer: { headless: true },
+            args: ['--no-sandbox'],
         });
         this.sessionData;
         this.clienteOk = false;
