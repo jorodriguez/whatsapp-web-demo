@@ -1,13 +1,13 @@
 
 const fs = require('fs');
-const qrcode = require('qrcode-terminal');
-const qrCode = require('qr-image');
+const qrcodeTerminal = require('qrcode-terminal');
+const qrImage = require('qr-image');
 
 const { Client, LegacySessionAuth,LocalAuth } = require('whatsapp-web.js');
 
 const SESSION_FILE_PATH = "./session.js";
 const country_code = '521'; //codigo para mexico
-const myNumber = "811XXXX";
+const myNumber = "8110208406";
 const msgInit = "Hola esto es una prueba desde api client web";
 
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
@@ -20,7 +20,7 @@ class WhatsappClient extends Client {
             puppeteer: { headless: true }
         });
         this.sessionData;
-        this.clienteOk = false;
+        this.clienteOk = false;        
         this.qrCode;
         this.init();
     }
@@ -53,7 +53,8 @@ class WhatsappClient extends Client {
         this.on('qr', qr =>{
             console.log("QR ..");//TODO: enviar qr por websocket
             this.qrCode = qr;
-            qrcode.generate(qr,{small:true});    
+            qrcodeTerminal.generate(qr,{small:true});    
+            generateImage(qr);
         });
 
         this.on('auth_failure',msg=>{
@@ -112,7 +113,7 @@ class WhatsappClient extends Client {
 
     
 
-    getQrCode =() =>{
+    /*getQrCode =() =>{
         
         if(this.clienteOk){
             
@@ -120,7 +121,9 @@ class WhatsappClient extends Client {
 
             return this.qrCode;
         }else{ return "Cliente No activo"; }        
-    }   
+    }  */
+    
+    getEstatus = () => this.clienteOk;
 
 }
 
@@ -143,7 +146,7 @@ const getSesionData = ()=>{
     return sesionData;        
 } 
 
-const generateImage = async (base64) => {
+/*const generateImage = async (base64) => {
     const path = `${process.cwd()}/external_resource`;
     
     let qr_svg =  await qrCode.imageSync(base64, { type: "svg", margin: 4 });
@@ -151,6 +154,24 @@ const generateImage = async (base64) => {
     qr_svg.pipe(require("fs").createWriteStream(`${path}/qr.svg`));
     console.log(`⚡ Recuerda que el QR se actualiza cada minuto ⚡'`);
     console.log(`⚡ Actualiza F5 el navegador para mantener el mejor QR⚡`);
+};*/
+
+const getPath = ()=> `${process.cwd()}/external_resource/qr.svg`;
+
+const generateImage = async (base64) => {
+    console.log("@generateImage ");
+          
+    let qr_svg = qrImage.image(base64, { type: "svg", margin: 4 });
+
+    qr_svg.pipe(require("fs").createWriteStream(`${getPath()}`));
+
+    console.log(` Recuerda que el QR se actualiza cada minuto '`);
+    console.log(` Actualiza F5 el navegador para mantener el mejor QR`);
+    console.log(` Entra a : http://localhost:5000/whatsapp/qr`);
+
+    return  getPath();
   };
+
+
 
 module.exports = WhatsappClient;

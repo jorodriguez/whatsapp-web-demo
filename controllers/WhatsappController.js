@@ -1,3 +1,4 @@
+const path = require("path");
 
 const WhatsappClientService = require('../service/WhatsappClientService')
 
@@ -26,11 +27,11 @@ const enviarMensaje = async (request, response) => {
 const getQr = async (request, response) => {
     try {
         
-        //const {phoneNumber,message} = request.body; //por empresa
-
-        const result = whatsappClient.getQrCode();
-
-        response.status(200).json(result);
+        if(!whatsappClient.getEstatus()){
+            response.sendFile(path.join(__dirname,'../external_resource','qr.svg'));
+        }else{
+            response.send("Expere un momento... refresca en 10 segundos");
+        }   
 
     } catch (e) {
         response.status(400).json({status:false, ex : e });
