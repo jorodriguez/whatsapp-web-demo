@@ -3,7 +3,7 @@ const fs = require('fs');
 const qrcodeTerminal = require('qrcode-terminal');
 const qrImage = require('qr-image');
 
-const { Client, LegacySessionAuth,LocalAuth } = require('whatsapp-web.js');
+const { Client, LegacySessionAuth,LocalAuth, Events } = require('whatsapp-web.js');
 
 const SESSION_FILE_PATH = "./session.js";
 const country_code = '521'; //codigo para mexico
@@ -24,7 +24,6 @@ class WhatsappClient extends Client {
         this.qrCode;
         this.init();
     }
-
     
     init = () =>{
 
@@ -43,10 +42,10 @@ class WhatsappClient extends Client {
 
             const msgInicial = `${msgInit} ${new Date()}`;
 
-            //testing message
-            this.sendMessagePhonePromise({ phoneNumber :myNumber, message :msgInicial });
-                
             this.clienteOk = true;
+
+            //testing message
+            this.sendMessagePhonePromise({ phoneNumber :myNumber, message :msgInicial });           
         
         });
 
@@ -64,8 +63,27 @@ class WhatsappClient extends Client {
         this.on('message', msg=>{
             console.log("msg from :"+msg.from + ':' + msg.body);
             
+        });        
+
+        this.on('disconnected', reason=>{
+            console.log("disconected "+reason );
+            this.clienteOk = false;
         });
+
+        this.registerEvent("change_battery");
+        this.registerEvent("message_ack");
+        this.registerEvent("message_create");
+        this.registerEvent("message_revoke_everyone");
+        this.registerEvent("message_revoke_everyone");
+    }
+
+    registerEvent = (name)=>{
         
+        console.log("Evento registrado "+name);
+
+        this.on(name,msg =>{
+            console.log(`${name }:${ JSON.stringify/(msg)}`);            
+        });                
     }
 
     sendMessagePhone = async ({phoneNumber,message}) =>{
@@ -75,10 +93,9 @@ class WhatsappClient extends Client {
             return;
         }
     
-        validarRequerido(message);
+        validarRequerido(message,"message");
 
         const chatId = buildChatId(phoneNumber);
-
                    
         const response = await this.sendMessage(chatId,message);
     
@@ -97,7 +114,8 @@ class WhatsappClient extends Client {
             return;
         }    
 
-        validarRequerido(message);
+        validarRequerido(message,"message");
+        validarRequerido(phoneNumber,"phoneNumber");
         
         let charId = buildChatId(phoneNumber);
 
@@ -110,24 +128,12 @@ class WhatsappClient extends Client {
 
         }).catch(err => console.log("ERROR AL ENVIAR MSG "+err));
     }
-
-    
-
-    /*getQrCode =() =>{
-        
-        if(this.clienteOk){
-            
-            generateImage(this.qrCode);
-
-            return this.qrCode;
-        }else{ return "Cliente No activo"; }        
-    }  */
-    
+   
     getEstatus = () => this.clienteOk;
 
 }
 
-const validarRequerido = (value)=> {if(!value) throw new Error("Valor es requerido");};
+const validarRequerido = (value,id)=> {if(!value)throw new Error(`${id} : Valor es requerido`);};
 
 const buildChatId = (number)=> {
      
@@ -146,16 +152,6 @@ const getSesionData = ()=>{
     return sesionData;        
 } 
 
-/*const generateImage = async (base64) => {
-    const path = `${process.cwd()}/external_resource`;
-    
-    let qr_svg =  await qrCode.imageSync(base64, { type: "svg", margin: 4 });
-
-    qr_svg.pipe(require("fs").createWriteStream(`${path}/qr.svg`));
-    console.log(`⚡ Recuerda que el QR se actualiza cada minuto ⚡'`);
-    console.log(`⚡ Actualiza F5 el navegador para mantener el mejor QR⚡`);
-};*/
-
 const getPath = ()=> `${process.cwd()}/external_resource/qr.svg`;
 
 const generateImage = async (base64) => {
@@ -170,7 +166,7 @@ const generateImage = async (base64) => {
     console.log(` Entra a : http://localhost:5000/whatsapp/qr`);
 
     return  getPath();
-  };
+};
 
 
 

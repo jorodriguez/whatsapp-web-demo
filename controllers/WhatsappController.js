@@ -9,6 +9,8 @@ const enviarMensaje = async (request, response) => {
         
         const { phoneNumber,message } = request.body;
 
+        console.log(JSON.stringify(request.body));
+
         console.log("try to send "+phoneNumber+" msg "+message);
 
         const result = await whatsappClient.sendMessagePhone({
