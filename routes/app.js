@@ -21,7 +21,7 @@ app.use((req, res, next) => {
 	next();
 });
 
-app.get('/', (request, response) => {	
+app.get('/root', (request, response) => {	
 	response.json({ info: `running dog v${version} (env:${process.env.ENV})` });
 });
 
