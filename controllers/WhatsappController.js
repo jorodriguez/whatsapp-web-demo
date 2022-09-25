@@ -1,35 +1,39 @@
 const path = require("path");
 
-const WhatsappClientService = require('../service/WhatsappClientService')
+const whatsappService = require("../services/whatsappService");
 
-const whatsappClient = new WhatsappClientService();
+const { schemaEnvioMensaje } = require("../schemas/SchemaMensajes");
 
 const enviarMensaje = async (request, response) => {
     try {
         
-        const { phoneNumber,message } = request.body;
+        const data = { phoneNumber,message,apiKey } = request.body;
 
-        console.log(JSON.stringify(request.body));
+        console.log(JSON.stringify(data));
 
-        console.log("try to send "+phoneNumber+" msg "+message);
+        await schemaEnvioMensaje.validateAsync(data);
 
-        const result = await whatsappClient.sendMessagePhone({
+        console.log("try to send "+phoneNumber+" msg "+message+" "+apiKey);
+
+        const result = await whatsappService.enviarMensaje({phoneNumber,message,apiKey});
+
+        /*const result = await whatsappClient.sendMessagePhone({
                             phoneNumber,
                             message
-                        })
+                        })*/
         
-        response.status(200).json(result);
+        response.status(200).json({status:false, mensaje : result, });
 
-    } catch (e) {
-        console.log("ERROR "+e);
-        response.status(400).json({status:false, ex : e });
+    } catch (ex) {
+        console.log("EXEPCION "+ ex);
+        response.status(400).json({status:false, mensaje : `${ex}` });
     }
 }
 
 const getQr = async (request, response) => {
     try {
         
-        if(!whatsappClient.getEstatus()){
+        if(! whatsappService.getEstatusCliente() ){
             response.sendFile(path.join(__dirname,'../external_resource','qr.svg'));
         }else{
             response.send("Expere un momento... refresca en 10 segundos");
