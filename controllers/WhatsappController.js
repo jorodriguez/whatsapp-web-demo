@@ -22,7 +22,7 @@ const enviarMensaje = async (request, response) => {
                             message
                         })*/
         
-        response.status(200).json({status:false, mensaje : result, });
+        response.status(200).json({status:true, mensaje : result, });
 
     } catch (ex) {
         console.log("EXEPCION "+ ex);
