@@ -13,11 +13,14 @@ const msgInit = "Hola esto es una prueba desde api client web";
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
 
 class WhatsappClient extends Client {
-//const client = new Client({ puppeteer: { headless: true,args: ['--no-sandbox', '--disable-setuid-sandbox']}, session: sessionCfg });
+
     constructor(){
         super({
             authStrategy: new LocalAuth({ session:getSesionData() } ),
-            puppeteer: { headless: true ,args: ['--no-sandbox', '--disable-setuid-sandbox'] }
+            puppeteer: { 
+                headless: true ,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+            }
         });
         this.sessionData;
         this.clienteOk = false;        

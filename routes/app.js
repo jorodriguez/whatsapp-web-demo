@@ -3,7 +3,7 @@ const app = express();
 const bodyParser = require('body-parser');
 const port = process.env.PORT || 5001;
 
-const version = "1";
+const version = "1.0";
 
 app.use(bodyParser.json());
 
