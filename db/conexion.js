@@ -24,6 +24,15 @@ const knex = require('knex')({
   });
 
 
+const testDb = async()=>{
+  console.log("process.env "+process.env);
+  const test =  await knex.raw(" select current_timestamp, current_date, current_setting('TIMEZONE') ");
+  console.log("HORA en DB");
+  console.log(JSON.stringify(test.rows));
+}
+
+testDb();
+
 module.exports = {
     knex
 };
