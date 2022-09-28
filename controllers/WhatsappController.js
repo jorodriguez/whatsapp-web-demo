@@ -33,7 +33,7 @@ const enviarMensaje = async (request, response) => {
 const getQr = async (request, response) => {
     try {
         
-        if(! whatsappService.getEstatusCliente() ){
+        if(!whatsappService.getEstatusCliente() ){
             response.sendFile(path.join(__dirname,'../external_resource','qr.svg'));
         }else{
             response.send("Expere un momento... refresca en 10 segundos");
@@ -44,4 +44,21 @@ const getQr = async (request, response) => {
     }
 }
 
-module.exports = {enviarMensaje,getQr};
+
+const logout = async (request, response) => {
+    console.log("@@LOGOUT");
+    try {
+        
+        if(whatsappService.getEstatusCliente() ){
+            await whatsappService.logout();
+            response.send("Sesion cerrada..");
+        }else{
+            response.send("No puede hacer logout no hay sesiones abiertas, escanee el qr");
+        }   
+
+    } catch (e) {
+        response.status(400).json({status:false, ex : e });
+    }
+}
+
+module.exports = {enviarMensaje,getQr,logout};

@@ -7,33 +7,32 @@ const { Client, LegacySessionAuth,LocalAuth, Events } = require('whatsapp-web.js
 
 const SESSION_FILE_PATH = "./session.js";
 const country_code = '521'; //codigo para mexico
-const myNumber = "8110208406";
+//const myNumber = "8110208406";
 const msgInit = "Hola esto es una prueba desde api client web";
 
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
 
 class WhatsappClient extends Client {
 
-    constructor(){
+    constructor(sesionData,idCuenta){
         super({
-            authStrategy: new LocalAuth({ session:getSesionData() } ),
+            authStrategy: new LocalAuth({ session:sesionData }),
             puppeteer: { 
                 headless: true ,
-                args: ['--no-sandbox', '--disable-setuid-sandbox'] 
+                args: ['--no-sandbox', '--disable-setuid-sandbox']               
             }
         });
+        this.idCuenta = idCuenta;
         this.sessionData;
         this.clienteOk = false;        
         this.qrCode;
-        this.init();
+        //this.init();
     }
     
     init = () =>{
 
-        console.log("Iniciando....");
-
-        this.initialize();
-
+        console.log("@@Iniciando cliente Whatsapp....");
+        
         this.on('authenticated',session=>{
             console.log("on authenticated");
         
@@ -41,27 +40,23 @@ class WhatsappClient extends Client {
         });
         
         this.on('ready',()=>{
-            console.log("El cliente esta listo..");                
-
-            const msgInicial = `${msgInit} ${new Date()}`;
-
+            console.log("El cliente esta listo ..");                
+            
             this.clienteOk = true;
-
-            //testing message
-            this.sendMessagePhonePromise({ phoneNumber :myNumber, message :msgInicial });           
         
-        });
-
-        this.on('qr', qr =>{
-            console.log("QR ..");//TODO: enviar qr por websocket
-            this.qrCode = qr;
-            qrcodeTerminal.generate(qr,{small:true});    
-            generateImage(qr);
         });
 
         this.on('auth_failure',msg=>{
             console.err("Hubo un fallo en en la auth"+msg);
+
         })
+
+        this.on('qr', qr =>{
+            console.log("QR ..");//TODO: enviar qr por websocket
+            this.qrCode = qr;
+            //qrcodeTerminal.generate(qr,{small:true});    
+            generateImage(qr);
+        });       
         
         this.on('message', msg=>{
             console.log("msg from :"+msg.from + ':' + msg.body);
@@ -73,11 +68,11 @@ class WhatsappClient extends Client {
             this.clienteOk = false;
         });
 
-        this.registerEvent("change_battery");
         this.registerEvent("message_ack");
         this.registerEvent("message_create");
-        this.registerEvent("message_revoke_everyone");
-        this.registerEvent("message_revoke_everyone");
+        this.registerEvent("message_revoke_everyone");        
+
+        this.initialize();
     }
 
     registerEvent = (name)=>{
@@ -85,7 +80,7 @@ class WhatsappClient extends Client {
         console.log("Evento registrado "+name);
 
         this.on(name,msg =>{
-            console.log(`${name }:${ JSON.stringify/(msg)}`);            
+            console.log(`${name }:${ JSON.stringify(msg)}`);            
         });                
     }
 
@@ -93,7 +88,7 @@ class WhatsappClient extends Client {
         
         if(!this.clienteOk){
             console.log("El cliente no esta listo, debe escanear el codigo QR");
-            return;
+            return false;
         }
     
         validarRequerido(message,"message");
@@ -104,7 +99,7 @@ class WhatsappClient extends Client {
     
         console.log("Mensaje enviado..");
     
-        return { id: response.id.id };
+        return response.id.id;
             
     }    
 
@@ -145,7 +140,7 @@ const buildChatId = (number)=> {
     return `${country_code}${number}${C_US_PLACEHOLDER}`;
 }
 
-
+/*
 const getSesionData = ()=>{
     let sesionData;
     if(fs.existsSync(SESSION_FILE_PATH)){
@@ -153,9 +148,9 @@ const getSesionData = ()=>{
     }
 
     return sesionData;        
-} 
+} */
 
-const getPath = ()=> `${process.cwd()}/external_resource/qr.svg`;
+const getPath = ()=> `${process.cwd()}/external_resource/${this.idCuenta}.svg`;
 
 const generateImage = async (base64) => {
     console.log("@generateImage ");

@@ -1,10 +1,44 @@
 const cuentaService = require('./cuentaService');
 const logMensajesDao = require('../dao/logMensajesDao');
 const LogMensajeModel = require("../models/LogMensajeModel")
+const DevicesSingleton = require('../models/DevicesSingleton')
 
 const WhatsappClientService = require('../core/WhatsappClientService');
 
-const whatsappClient = new WhatsappClientService();
+const DEVICES = DevicesSingleton.getInstance();
+
+const buildClient = () =>{
+     return new WhatsappClientService();     
+}
+
+const initSesion = async (apiKey)=>{
+    
+    const cuenta = await cuentaService.getCuentaInfo(apiKey);
+
+    if(!cuenta)
+        throw new Error("No existe la cuenta");
+            
+    const cliente = buildClient();
+
+    cliente.init();
+
+    DEVICES.set(apiKey,cliente);
+      
+}
+
+const logout = async()=>{
+    console.log("@Logout cliente")
+    
+    let ret = false;
+
+    if(whatsappClient == null){}
+        
+        await whatsappClient.logout();
+        ret = true;
+        console.log("@Sesion cerrada");
+  
+    return ret;  
+}
 
 const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
     console.log("@enviarMensaje")
@@ -15,6 +49,9 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 
     console.log("cuenta encontrada "+JSON.stringify(cuentaInfo));
 
+    if(!whatsappClient.getEstatus())
+        throw new Error("El cliente no esta listo");
+
     if(!phoneNumber)
         throw new Error("El número es requerido");
 
@@ -23,6 +60,8 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 
     if(!cuentaInfo)
         throw new Error("No existe el api key");
+
+    
     
     if(cuentaInfo.mensajes_pendientes > 0){
         console.log("Intentando enviar mensaje...");
@@ -60,5 +99,5 @@ const getEstatusCliente = () => whatsappClient.getEstatus();
 
 
 module.exports = {
-    enviarMensaje,getEstatusCliente
+    enviarMensaje,getEstatusCliente,logout
 };

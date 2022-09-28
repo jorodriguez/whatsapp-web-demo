@@ -3,5 +3,6 @@ const whatsappController = require('../controllers/WhatsappController');
 
 router.post('/send',whatsappController.enviarMensaje);
 router.get('/qr',whatsappController.getQr);
+router.put('/logout',whatsappController.logout);
 
 module.exports = router;
