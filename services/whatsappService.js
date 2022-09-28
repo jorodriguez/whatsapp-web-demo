@@ -125,7 +125,12 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 }
 
 
-const getEstatusCliente = () => whatsappClient.getEstatus();
+const getEstatusCliente = (apiKey) => {
+     
+    const whatsappClient = getInstanceClient(apiKey);    
+
+     whatsappClient.getEstatus()
+};
 
 
 module.exports = {
