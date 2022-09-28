@@ -11,31 +11,63 @@ const buildClient = () =>{
      return new WhatsappClientService();     
 }
 
-const initSesion = async (apiKey)=>{
+const getInfoCuenta = async (apiKey) => {
     
     const cuenta = await cuentaService.getCuentaInfo(apiKey);
 
     if(!cuenta)
         throw new Error("No existe la cuenta");
+          
+    return cuenta;
+}
+
+
+const getInstanceClient = (apiKey) => {
+          
+    const whatsappClient = DEVICES.get(cuenta.apiKey);
+
+/*    if(!whatsappClient)
+        throw new Error("No existe la instancia");
+        */
+
+    return whatsappClient;
+
+}
+
+const initSesion = async (apiKey)=>{
+    
+    const  cuenta  = await getInfoCuenta(apiKey);
+
+    const instancia = getInstanceClient(apiKey);
+
+    if(instancia){
+        throw new Error("Ya existe una sesión");
+    }
             
     const cliente = buildClient();
 
-    cliente.init();
-
+    const state =  await cliente.init();
+    
     DEVICES.set(apiKey,cliente);
-      
+
+    return state;
+          
 }
 
-const logout = async()=>{
-    console.log("@Logout cliente")
+const logout = async(apiKey)=>{
+    console.log("@Logout cliente "+apiKey)
     
     let ret = false;
 
-    if(whatsappClient == null){}
-        
+    const whatsappClient = getInstanceClient(apiKey);    
+
+    if(whatsappClient == null){        
+     
         await whatsappClient.logout();
         ret = true;
+        DEVICES.delete(apiKey);
         console.log("@Sesion cerrada");
+    }
   
     return ret;  
 }
@@ -45,7 +77,9 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 
     const {phoneNumber,message,apiKey} = data;    
     
-    const cuentaInfo = await cuentaService.getCuentaInfo(apiKey);
+    const cuentaInfo = await getInfoCuenta(apiKey);
+
+    const whatsappClient = getInstanceClient(apiKey);    
 
     console.log("cuenta encontrada "+JSON.stringify(cuentaInfo));
 
@@ -57,13 +91,9 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 
     if(!message)
         throw new Error("El mensaje es requerido");
-
-    if(!cuentaInfo)
-        throw new Error("No existe el api key");
-
     
     
-    if(cuentaInfo.mensajes_pendientes > 0){
+    //if(cuentaInfo.mensajes_pendientes > 0){
         console.log("Intentando enviar mensaje...");
 
         const result = await whatsappClient.sendMessagePhone({
@@ -71,7 +101,7 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
             message
         });
 
-        await cuentaService.actualizarNumeroMensajes(cuentaInfo.id,1,"RESTAR");
+        //await cuentaService.actualizarNumeroMensajes(cuentaInfo.id,1,"RESTAR");
 
         const logMensaje = new LogMensajeModel();
 
@@ -86,12 +116,12 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
         console.log("Mensaje guardado..");
 
         return logMensaje.buildReturn();
-    }else{
+    /*}else{
         
         console.log("@no hay creditos");
 
         throw new Error("La cuenta ya no tiene mensajes disponibles...");// Error("La cuenta ya no tiene mensajes crédito.");
-    }
+    }*/
 }
 
 
@@ -99,5 +129,5 @@ const getEstatusCliente = () => whatsappClient.getEstatus();
 
 
 module.exports = {
-    enviarMensaje,getEstatusCliente,logout
+    enviarMensaje,getEstatusCliente,logout,initSesion
 };
