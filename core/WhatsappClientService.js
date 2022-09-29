@@ -5,26 +5,26 @@ const qrImage = require('qr-image');
 
 const { Client, LegacySessionAuth,LocalAuth, Events } = require('whatsapp-web.js');
 
-const SESSION_FILE_PATH = "./session.js";
-const country_code = '521'; //codigo para mexico
+//const SESSION_FILE_PATH = "./session.js";
+//const country_code = '521'; //codigo para mexico
 //const myNumber = "8110208406";
-const msgInit = "Hola esto es una prueba desde api client web";
+//const msgInit = "Hola esto es una prueba desde api client web";
 
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
 
 class WhatsappClient extends Client {
 
-    constructor(sesionData,idCuenta,contryCode){
+    constructor(props = {sesionData,apiKey,contryCode}){
         super({
-            authStrategy: new LocalAuth({ session:sesionData }),
+            authStrategy: new LocalAuth({ clientId: `${props.apiKey}` , session:props.sesionData }),
             puppeteer: { 
                 headless: true ,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']               
             }
         });
-        this.idCuenta = idCuenta;
-        this.contryCode = contryCode;
-        this.sessionData;
+        this.apiKey = props.apiKey;
+        this.contryCode = props.contryCode;
+        this.sessionData = props.sesionData;
         this.clienteOk = false;        
         this.qrCode;
         //this.init();
@@ -33,36 +33,41 @@ class WhatsappClient extends Client {
     init = () =>{
 
         console.log("@@Iniciando cliente Whatsapp....");
+
         return new Promise((resolve,reject)=>{        
-        console.log("@@Iniciando promesar...");
+        
         this.on('authenticated',session=>{
             console.log("on authenticated");
+            //se autentica con el qr 
         
             this.sessionData = session;                   
             
-            //aqui guardar la sesion en la db
-            resolve({inSesion:true,leerQr:false,qr:null});
+            //aqui guardar la sesion en la db                        
+            resolve({sesionIniciada:true,leerQr:false,qr:null,sesionData:session});
 
         });
         
         this.on('ready',()=>{
-            console.log("El cliente esta listo ..");                
+            console.log("@El cliente esta listo para enviar mensajes ..");                
             
+            this.qrCode = null;
+
             this.clienteOk = true;                 
             
         });
 
         this.on('auth_failure',msg=>{
             console.err("Hubo un fallo en en la auth"+msg);
-            reject()
+            reject({status:false,msg});
         })
 
         this.on('qr', qr =>{
-            console.log("QR ..");//TODO: enviar qr por websocket
+            console.log(`QR ${this.apiKey}..`);//TODO: enviar qr por websocket
             this.qrCode = qr;
+            this.clienteOk = false;
             //qrcodeTerminal.generate(qr,{small:true});    
-            resolve({inSesion:false,leerQr:true,qr:qr});
-            generateImage(qr,this.idCuenta);
+            resolve({sesionIniciada:false,leerQr:true,qr:qr,sesionData:null});
+            generateImage(qr,this.apiKey);
         });       
         
         this.on('message', msg=>{
@@ -140,15 +145,17 @@ class WhatsappClient extends Client {
    
     getEstatus = () => this.clienteOk;
 
+    estaPermitidoLeerQr = () => this.qrCode != null;
+
 }
 
 const validarRequerido = (value,id)=> {if(!value)throw new Error(`${id} : Valor es requerido`);};
 
 const buildChatId = (number)=> {
      
-    validarRequerido(number);
+    validarRequerido(number,'numero para chatid');
 
-    return `${this.contryCode}${number}${C_US_PLACEHOLDER}`;
+    return `${number}${C_US_PLACEHOLDER}`;
 }
 
 /*
@@ -168,11 +175,9 @@ const generateImage = async (base64,nombreArchivo) => {
           
     let qr_svg = qrImage.image(base64, { type: "svg", margin: 4 });
 
-    qr_svg.pipe(require("fs").createWriteStream(`${getPath(nombreArchivo)}`));
+    qr_svg.pipe(require("fs").createWriteStream(`${getPath(`qr_${nombreArchivo}`)}`));
 
-    console.log(` Recuerda que el QR se actualiza cada minuto '`);
-    console.log(` Actualiza F5 el navegador para mantener el mejor QR`);
-    console.log(` Entra a : http://localhost:5000/whatsapp/qr`);
+    console.log(` Qr refrescado  ${nombreArchivo}`);    
 
     //return  getPath();
 };

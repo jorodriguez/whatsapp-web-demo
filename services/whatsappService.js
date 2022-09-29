@@ -7,8 +7,10 @@ const WhatsappClientService = require('../core/WhatsappClientService');
 
 const DEVICES = DevicesSingleton.getInstance();
 
-const buildClient = () =>{
-     return new WhatsappClientService();     
+const buildClient = (data = {sesionData,idCuenta,contryCode}) =>{
+
+     return new WhatsappClientService({...data});     
+
 }
 
 const getInfoCuenta = async (apiKey) => {
@@ -24,7 +26,7 @@ const getInfoCuenta = async (apiKey) => {
 
 const getInstanceClient = (apiKey) => {
           
-    const whatsappClient = DEVICES.get(cuenta.apiKey);
+    const whatsappClient = DEVICES.get(apiKey);
 
 /*    if(!whatsappClient)
         throw new Error("No existe la instancia");
@@ -34,19 +36,26 @@ const getInstanceClient = (apiKey) => {
 
 }
 
-const initSesion = async (apiKey)=>{
+const iniciarCliente = async (apiKey)=>{
     
-    const  cuenta  = await getInfoCuenta(apiKey);
+    const cuenta = await getInfoCuenta(apiKey);
 
-    const instancia = getInstanceClient(apiKey);
+    const instancia = getInstanceClient(cuenta.api_key);
 
     if(instancia){
         throw new Error("Ya existe una sesión");
     }
             
-    const cliente = buildClient();
+    const cliente = buildClient({sesionData:null,contryCode:cuenta.contry_code,apiKey:cuenta.api_key});
 
+    console.log(`iniciando cliente ${cuenta.api_key}.....`)
+    
     const state =  await cliente.init();
+
+    console.log("iniciado "+JSON.stringify(state));
+   
+    //guardar sesion
+    await cuentaService.actualizarSesion({cCuenta:cuenta.id,sesionData:state.sesionData,qr:state.qr});
     
     DEVICES.set(apiKey,cliente);
 
@@ -59,15 +68,16 @@ const logout = async(apiKey)=>{
     
     let ret = false;
 
-    const whatsappClient = getInstanceClient(apiKey);    
+    const instancia = getInstanceClient(apiKey);    
 
-    if(whatsappClient == null){        
-     
-        await whatsappClient.logout();
+    if(instancia){             
+        await instancia.logout();
         ret = true;
         DEVICES.delete(apiKey);
+        const cuenta = await getInfoCuenta(apiKey);        
+        await cuentaService.actualizarSesion({cCuenta:cuenta.id,sesionData:null,qr:null});
         console.log("@Sesion cerrada");
-    }
+    }else{console.log("No existe la instancia para logout")}
   
     return ret;  
 }
@@ -94,10 +104,12 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
     
     
     //if(cuentaInfo.mensajes_pendientes > 0){
-        console.log("Intentando enviar mensaje...");
+     console.log("Intentando enviar mensaje...");
+
+     const realPhone = `${cuentaInfo.contry_code}${phoneNumber}`;
 
         const result = await whatsappClient.sendMessagePhone({
-            phoneNumber,
+            phoneNumber:realPhone,
             message
         });
 
@@ -126,13 +138,38 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
 
 
 const getEstatusCliente = (apiKey) => {
-     
+    console.log("@getEstatusCliente "+apiKey);         
     const whatsappClient = getInstanceClient(apiKey);    
 
-     whatsappClient.getEstatus()
+//    if(!whatsappClient)
+  //      throw new Error("No existe el cliente o aun no inicia sesión");
+
+    return whatsappClient ? whatsappClient.getEstatus():null;
 };
 
 
+
+
+const estaPermitidoLeerQr = (apiKey) => {
+    console.log("@estaPermitidoLeerQr "+apiKey);         
+     const whatsappClient = getInstanceClient(apiKey);    
+    return whatsappClient ? whatsappClient.estaPermitidoLeerQr():false;
+};
+
+const imprimirSesiones = () =>{
+    console.log("@Imprimir sesiones");
+    const DEVICES = DevicesSingleton.getInstance();
+
+    if(DEVICES.size == 0)
+        console.log("No hay sesiones abiertas");
+    else
+    for (const [key, value] of DEVICES.entries()) {
+        console.log(`${key} = ${value}`);
+    }
+    
+}
+
+
 module.exports = {
-    enviarMensaje,getEstatusCliente,logout,initSesion
+    enviarMensaje,getEstatusCliente,logout,iniciarCliente,imprimirSesiones,estaPermitidoLeerQr,getInstanceClient
 };

@@ -31,16 +31,66 @@ const enviarMensaje = async (request, response) => {
 }
 
 const getQr = async (request, response) => {
+    console.log("@getQr");
     try {
-        
-        if(!whatsappService.getEstatusCliente() ){
-            response.sendFile(path.join(__dirname,'../external_resource','qr.svg'));
+
+        const { apiKey } = request.params;
+
+        if(!apiKey)
+            throw new Error("El ApiKey es requerido..");
+ 
+
+        let cliente = null;
+
+        //const clienteIniciado = whatsappService.getEstatusCliente(apiKey);        
+        const clienteIniciado = whatsappService.getInstanceClient(apiKey);
+
+        if(!clienteIniciado){
+            console.log("Cliente no iniciado----> se procede a iniciar la instancia");
+            cliente = await whatsappService.iniciarCliente(apiKey);
+        }
+
+        //obtener info del cliente                   
+        if(whatsappService.estaPermitidoLeerQr(apiKey)){
+            console.log("--> getQr para leer");
+            response.sendFile(path.join(__dirname,'../external_resource',`qr_${apiKey}.svg`));
+
         }else{
-            response.send("Expere un momento... refresca en 10 segundos");
+
+            let textRet = cliente.sesionIniciada ? `La sesion esta iniciada y lista para enviar mensajes `:`Espere un momento...`;
+            
+            response.send(textRet);
+
         }   
 
     } catch (e) {
-        response.status(400).json({status:false, ex : e });
+        console.log("Error "+e);
+        response.status(400).json({status:false, ex :  `${e}` });
+    }
+}
+
+
+const iniciarCliente = async (request, response) => {
+    console.log("@@iniciarCliente");
+    try {
+
+        const { apiKey } = request.body;
+
+        if(whatsappService.getEstatusCliente(apiKey)){
+
+            response.status(200).json({status:true,message:"Existe una sesión iniciada ", ex : null });
+
+        }else{
+
+            const result = await whatsappService.iniciarCliente(apiKey);
+
+            
+            response.status(200).json({status:false,message:"Cliente iniciado, escanea el qr",client:result, ex : null });            
+        }   
+
+    } catch (e) {
+        console.log(e);
+        response.status(400).json({status:false, ex : `${e}` });
     }
 }
 
@@ -48,17 +98,39 @@ const getQr = async (request, response) => {
 const logout = async (request, response) => {
     console.log("@@LOGOUT");
     try {
+
+        const { apiKey } = request.body;
         
-        if(whatsappService.getEstatusCliente() ){
-            await whatsappService.logout();
-            response.send("Sesion cerrada..");
+        if(whatsappService.getEstatusCliente(apiKey) ){
+
+            await whatsappService.logout(apiKey);
+            
+            response.status(200).json({status:true,message:"Sesión Cerrada", ex : null });
+
         }else{
-            response.send("No puede hacer logout no hay sesiones abiertas, escanee el qr");
+
+            response.status(400).json({status:false,message:"No existe la sesión", ex : null });            
         }   
+
+    } catch (e) {
+        response.status(400).json({status:false, ex :  `${e}` });
+    }
+}
+
+const imprimirSesiones = async (request, response) => {
+    console.log("@@imprimirSesiones");
+    try {
+
+        whatsappService.imprimirSesiones();
+                
+        response.status(400).json({status:true });                      
 
     } catch (e) {
         response.status(400).json({status:false, ex : e });
     }
 }
 
-module.exports = {enviarMensaje,getQr,logout};
+
+
+
+module.exports = {enviarMensaje,getQr,logout,iniciarCliente,imprimirSesiones};
