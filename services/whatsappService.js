@@ -28,10 +28,6 @@ const getInstanceClient = (apiKey) => {
           
     const whatsappClient = DEVICES.get(apiKey);
 
-/*    if(!whatsappClient)
-        throw new Error("No existe la instancia");
-        */
-
     return whatsappClient;
 
 }
@@ -52,7 +48,9 @@ const iniciarCliente = async (apiKey)=>{
     
     const state =  await cliente.init();
 
-    console.log("iniciado "+JSON.stringify(state));
+    console.log("iniciado "+JSON.stringify(state));   
+     
+
    
     //guardar sesion
     await cuentaService.actualizarSesion({cCuenta:cuenta.id,sesionData:state.sesionData,qr:state.qr});
@@ -103,10 +101,10 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
         throw new Error("El mensaje es requerido");
     
     
-    //if(cuentaInfo.mensajes_pendientes > 0){
-     console.log("Intentando enviar mensaje...");
+        //if(cuentaInfo.mensajes_pendientes > 0){
+        console.log("Intentando enviar mensaje...");
 
-     const realPhone = `${cuentaInfo.contry_code}${phoneNumber}`;
+        const realPhone = `${cuentaInfo.contry_code}${phoneNumber}`;
 
         const result = await whatsappClient.sendMessagePhone({
             phoneNumber:realPhone,
@@ -146,8 +144,6 @@ const getEstatusCliente = (apiKey) => {
 
     return whatsappClient ? whatsappClient.getEstatus():null;
 };
-
-
 
 
 const estaPermitidoLeerQr = (apiKey) => {

@@ -5,11 +5,6 @@ const qrImage = require('qr-image');
 
 const { Client, LegacySessionAuth,LocalAuth, Events } = require('whatsapp-web.js');
 
-//const SESSION_FILE_PATH = "./session.js";
-//const country_code = '521'; //codigo para mexico
-//const myNumber = "8110208406";
-//const msgInit = "Hola esto es una prueba desde api client web";
-
 const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
 
 class WhatsappClient extends Client {
@@ -43,7 +38,7 @@ class WhatsappClient extends Client {
             this.sessionData = session;                   
             
             //aqui guardar la sesion en la db                        
-            resolve({sesionIniciada:true,leerQr:false,qr:null,sesionData:session});
+            resolve({sesionIniciada:true, leerQr:false, qr:null, sesionData:session});
 
         });
         
@@ -53,6 +48,8 @@ class WhatsappClient extends Client {
             this.qrCode = null;
 
             this.clienteOk = true;                 
+
+            //guardar en db             
             
         });
 
@@ -83,9 +80,9 @@ class WhatsappClient extends Client {
             
         });
 
-        this.registerEvent("message_ack");
-        this.registerEvent("message_create");
-        this.registerEvent("message_revoke_everyone");        
+        //this.registerEvent("message_ack");
+        //this.registerEvent("message_create");
+        //this.registerEvent("message_revoke_everyone");        
 
         this.initialize();
     });
@@ -119,30 +116,6 @@ class WhatsappClient extends Client {
             
     }    
 
-    sendMessagePhonePromise = ({phoneNumber,message})=>{
-
-        console.log(`try to send ${phoneNumber} : ${message}`);
-        
-        if(!this.clienteOk){
-            console.log("El cliente no esta listo, debe escanear el codigo QR");
-            return;
-        }    
-
-        validarRequerido(message,"message");
-        validarRequerido(phoneNumber,"phoneNumber");
-        
-        let charId = buildChatId(phoneNumber);
-
-        this.sendMessage(charId,message)            
-        .then(response=>{
-                if(response.id.fromMe){
-                    console.log("Mensaje enviado...");
-                }
-            console.log("Msg Enviado: "+response.id.id);
-
-        }).catch(err => console.log("ERROR AL ENVIAR MSG "+err));
-    }
-   
     getEstatus = () => this.clienteOk;
 
     estaPermitidoLeerQr = () => this.qrCode != null;
@@ -157,16 +130,6 @@ const buildChatId = (number)=> {
 
     return `${number}${C_US_PLACEHOLDER}`;
 }
-
-/*
-const getSesionData = ()=>{
-    let sesionData;
-    if(fs.existsSync(SESSION_FILE_PATH)){
-        sesionData = require(SESSION_FILE_PATH);
-    }
-
-    return sesionData;        
-} */
 
 const getPath = (nombreArchivo)=> `${process.cwd()}/external_resource/${nombreArchivo}.svg`;
 

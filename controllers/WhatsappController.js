@@ -69,7 +69,7 @@ const getQr = async (request, response) => {
     }
 }
 
-
+/*
 const iniciarCliente = async (request, response) => {
     console.log("@@iniciarCliente");
     try {
@@ -92,7 +92,7 @@ const iniciarCliente = async (request, response) => {
         console.log(e);
         response.status(400).json({status:false, ex : `${e}` });
     }
-}
+}*/
 
 
 const logout = async (request, response) => {
@@ -133,4 +133,4 @@ const imprimirSesiones = async (request, response) => {
 
 
 
-module.exports = {enviarMensaje,getQr,logout,iniciarCliente,imprimirSesiones};
+module.exports = {enviarMensaje,getQr,logout,imprimirSesiones};
