@@ -41,8 +41,7 @@ const getQr = async (request, response) => {
  
 
         let cliente = null;
-
-        //const clienteIniciado = whatsappService.getEstatusCliente(apiKey);        
+        
         const clienteIniciado = whatsappService.getInstanceClient(apiKey);
 
         if(!clienteIniciado){
@@ -69,31 +68,6 @@ const getQr = async (request, response) => {
     }
 }
 
-/*
-const iniciarCliente = async (request, response) => {
-    console.log("@@iniciarCliente");
-    try {
-
-        const { apiKey } = request.body;
-
-        if(whatsappService.getEstatusCliente(apiKey)){
-
-            response.status(200).json({status:true,message:"Existe una sesión iniciada ", ex : null });
-
-        }else{
-
-            const result = await whatsappService.iniciarCliente(apiKey);
-
-            
-            response.status(200).json({status:false,message:"Cliente iniciado, escanea el qr",client:result, ex : null });            
-        }   
-
-    } catch (e) {
-        console.log(e);
-        response.status(400).json({status:false, ex : `${e}` });
-    }
-}*/
-
 
 const logout = async (request, response) => {
     console.log("@@LOGOUT");
@@ -117,20 +91,7 @@ const logout = async (request, response) => {
     }
 }
 
-const imprimirSesiones = async (request, response) => {
-    console.log("@@imprimirSesiones");
-    try {
-
-        whatsappService.imprimirSesiones();
-                
-        response.status(400).json({status:true });                      
-
-    } catch (e) {
-        response.status(400).json({status:false, ex : e });
-    }
-}
 
 
 
-
-module.exports = {enviarMensaje,getQr,logout,imprimirSesiones};
+module.exports = {enviarMensaje,getQr,logout};

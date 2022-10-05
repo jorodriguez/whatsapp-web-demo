@@ -9,17 +9,19 @@ const C_US_PLACEHOLDER = '@c.us'; // Este codigo es definido por whatsapp
 
 class WhatsappClient extends Client {
 
-    constructor(props = {sesionData,apiKey,contryCode}){
+    constructor(prop = {sesionData,apiKey,contryCode}){
         super({
-            authStrategy: new LocalAuth({ clientId: `${props.apiKey}` , session:props.sesionData }),
+            authStrategy: new LocalAuth({ clientId: `${prop.apiKey}` , session:prop.sesionData }),
             puppeteer: { 
                 headless: true ,
                 args: ['--no-sandbox', '--disable-setuid-sandbox']               
             }
         });
-        this.apiKey = props.apiKey;
-        this.contryCode = props.contryCode;
-        this.sessionData = props.sesionData;
+        console.log("CONSTRUCTOR Cliente "+JSON.stringify(prop));
+
+        this.apiKey = prop.apiKey;
+        this.contryCode = prop.contryCode;
+        this.sessionData = prop.sesionData;
         this.clienteOk = false;        
         this.qrCode;
         //this.init();

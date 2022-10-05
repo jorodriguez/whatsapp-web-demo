@@ -5,6 +5,6 @@ router.post('/send',whatsappController.enviarMensaje);
 router.get('/qr/:apiKey',whatsappController.getQr);
 router.post('/sesion/logout',whatsappController.logout);
 //router.post('/sesion/iniciar',whatsappController.iniciarCliente);
-router.get('/sesion/imprimir',whatsappController.imprimirSesiones);
+//router.get('/sesion/imprimir',whatsappController.imprimirSesiones);
 
 module.exports = router;
