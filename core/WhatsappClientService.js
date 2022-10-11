@@ -24,6 +24,7 @@ class WhatsappClient extends Client {
         this.sessionData = prop.sesionData;
         this.clienteOk = false;        
         this.qrCode;
+        this.contadorQr = 0;
         //this.init();
     }
     
@@ -61,12 +62,13 @@ class WhatsappClient extends Client {
         })
 
         this.on('qr', qr =>{
-            console.log(`QR ${this.apiKey}..`);//TODO: enviar qr por websocket
+            console.log(`[${contadorQr}] :: para ${this.apiKey} :: ${qr}`);//TODO: enviar qr por websocket
             this.qrCode = qr;
             this.clienteOk = false;
-            //qrcodeTerminal.generate(qr,{small:true});    
+            this.contadorQr++;
+            
             resolve({sesionIniciada:false,leerQr:true,qr:qr,sesionData:null});
-            generateImage(qr,this.apiKey);
+            //generateImage(qr,this.apiKey);
         });       
         
         this.on('message', msg=>{

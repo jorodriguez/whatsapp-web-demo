@@ -49,15 +49,14 @@ const iniciarCliente = async (apiKey)=>{
     const state =  await cliente.init();
 
     console.log("iniciado "+JSON.stringify(state));   
-     
-
+    
    
     //guardar sesion
     await cuentaService.actualizarSesion({cCuenta:cuenta.id,sesionData:state.sesionData,qr:state.qr});
     
     DEVICES.set(apiKey,cliente);
 
-    return state;
+    return cliente;
           
 }
 

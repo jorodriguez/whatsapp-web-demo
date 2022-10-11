@@ -38,6 +38,47 @@ const getQr = async (request, response) => {
 
         if(!apiKey)
             throw new Error("El ApiKey es requerido..");
+         
+        let clienteIniciado = whatsappService.getInstanceClient(apiKey);
+
+        if(!clienteIniciado){
+            console.log("Cliente no iniciado----> se procede a iniciar la instancia");
+            clienteIniciado = await whatsappService.iniciarCliente(apiKey);
+        }
+
+        //obtener info del cliente                   
+        //if(whatsappService.estaPermitidoLeerQr(apiKey)){
+        if(clienteIniciado.clienteOk){
+
+            console.log("--> getQr para leer");
+            console.log(clienteIniciado.qr)
+            response.send(clienteIniciado.qr);
+           // response.sendFile(path.join(__dirname,'../external_resource',`qr_${apiKey}.svg`));
+
+        }else{
+
+            let textRet = clienteIniciado != null ? `La sesion esta iniciada y lista para enviar mensajes `:`Espere un momento...`;
+            
+            response.send(textRet);
+
+        }   
+
+    } catch (e) {
+        console.log("Error "+e);
+        response.status(400).json({status:false, ex :  `${e}` });
+    }
+}
+
+
+
+const getHtmlQr = async (request, response) => {
+    console.log("@getHtmlQr");
+    try {
+
+        const { apiKey } = request.params;
+
+        if(!apiKey)
+            throw new Error("El ApiKey es requerido..");
  
 
         let cliente = null;
