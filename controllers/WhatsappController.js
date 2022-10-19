@@ -52,8 +52,8 @@ const getQr = async (request, response) => {
 
             console.log("--> getQr para leer");
             console.log(clienteIniciado.qr)
-            response.send(clienteIniciado.qr);
-           // response.sendFile(path.join(__dirname,'../external_resource',`qr_${apiKey}.svg`));
+            //response.send(clienteIniciado.qr);
+           response.sendFile(path.join(__dirname,'../external_resource',`qr_${apiKey}.svg`));
 
         }else{
 
@@ -70,7 +70,7 @@ const getQr = async (request, response) => {
 }
 
 
-
+/*
 const getHtmlQr = async (request, response) => {
     console.log("@getHtmlQr");
     try {
@@ -108,7 +108,7 @@ const getHtmlQr = async (request, response) => {
         response.status(400).json({status:false, ex :  `${e}` });
     }
 }
-
+*/
 
 const logout = async (request, response) => {
     console.log("@@LOGOUT");

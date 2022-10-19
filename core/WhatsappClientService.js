@@ -25,6 +25,7 @@ class WhatsappClient extends Client {
         this.clienteOk = false;        
         this.qrCode;
         this.contadorQr = 0;
+        
         //this.init();
     }
     
@@ -66,9 +67,9 @@ class WhatsappClient extends Client {
             this.qrCode = qr;
             this.clienteOk = false;
             this.contadorQr++;
-            
+                        
+            generateImage(qr,this.apiKey);
             resolve({sesionIniciada:false,leerQr:true,qr:qr,sesionData:null});
-            //generateImage(qr,this.apiKey);
         });       
         
         this.on('message', msg=>{

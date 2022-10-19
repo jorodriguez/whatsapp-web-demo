@@ -120,9 +120,9 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
         logMensaje.mensaje = message;
         logMensaje.whatsapp = phoneNumber;        
 
-        logMensajesDao.save(logMensaje.buildInsert());
+        //logMensajesDao.save(logMensaje.buildInsert());
         
-        console.log("Mensaje guardado..");
+        console.log("Mensaje guardado en db..");
 
         return logMensaje.buildReturn();
     /*}else{
