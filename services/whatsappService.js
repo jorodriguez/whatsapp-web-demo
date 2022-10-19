@@ -57,7 +57,7 @@ const iniciarCliente = async (apiKey)=>{
     
     DEVICES.set(apiKey,cliente);
 
-    return state;
+    return cliente;
           
 }
 
@@ -121,7 +121,7 @@ const enviarMensaje = async (data = {phoneNumber,message,apiKey}) =>{
         logMensaje.mensaje = message;
         logMensaje.whatsapp = phoneNumber;        
 
-        logMensajesDao.save(logMensaje.buildInsert());
+       // logMensajesDao.save(logMensaje.buildInsert());
         
         console.log("Mensaje guardado..");
 
