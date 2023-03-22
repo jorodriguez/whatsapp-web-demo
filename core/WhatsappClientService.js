@@ -75,6 +75,8 @@ class WhatsappClient extends Client {
                 console.log("disconected " + reason);
                 this.clienteOk = false;
 
+                //FIXT_TO Trabajar aqui si se desconecta el cliente del telefono borrar todas las instancias
+
                 //guardar en db 
 
             });
