@@ -93,9 +93,11 @@ const enviarMensaje = async(data = { phoneNumber, message, apiKey }) => {
 
     console.log("Instancia cliente " + JSON.stringify(whatsappClient));
 
+    if (!whatsappClient || !whatsappClient.getEstatus())
+        throw new Error("El cliente no esta listo vuelve a escanear el QR (1)");
 
     if (!whatsappClient.getEstatus())
-        throw new Error("El cliente no esta listo");
+    throw new Error("El cliente no esta listo vuelve a escanear el QR (2)");
 
     if (!phoneNumber)
         throw new Error("El número es requerido");
