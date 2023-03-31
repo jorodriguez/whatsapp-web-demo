@@ -10,7 +10,7 @@ class WhatsappClient extends Client {
 
     constructor(props = { sesionData, apiKey, contryCode }) {
         super({
-            authStrategy: new LegacySessionAuth({ clientId: `${props.apiKey}`, session: props.sesionData }),
+            authStrategy: new LocalAuth({ clientId: `${props.apiKey}`, session: props.sesionData }),
             puppeteer: {
                 headless: true,
                 args: ['--no-sandbox',
