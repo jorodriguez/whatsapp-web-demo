@@ -91,7 +91,7 @@ const enviarMensaje = async(data = { phoneNumber, message, apiKey }) => {
 
     console.log("cuenta encontrada " + JSON.stringify(cuentaInfo));
 
-    console.log("Instancia cliente " + JSON.stringify(whatsappClient));
+   
 
     if (!whatsappClient || !whatsappClient.getEstatus())
         throw new Error("El cliente no esta listo vuelve a escanear el QR (1)");
